@@ -7,17 +7,20 @@ from os.path import isfile, join
 import re
 import random
 import time
+import MeCab
 # from editdistance import eval
 
 #---main routine---
 
 start = time.time()
+wakati = MeCab.Tagger("-Owakati")
+chasen = MeCab.Tagger("-Ochasen")
 
 # PAtH(in,out共通)
-dirin = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection/wikidata_hierarchical/"
+dirin = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/wikidata_hierarchical/"
 files = [f for f in listdir(dirin) if isfile(join(dirin, f))]
 
-dirout = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection/wikidata_hierarchical_filtered/"
+dirout = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/wikidata_hierarchical_filtered/"
 # 読み込むファイルの数
 fileNum = 10
 
@@ -35,17 +38,14 @@ for _file in files:
 		fout.write(lines[0])
 		if len(lines) <= 1: #タイトルしか存在しないページ
 			continue
-		"""
-		topic = text[0].split("|")[0]
-		query = text[0].split("|")[1][:-1]
-		#if topic != query: #ページ遷移してたらcotinue
-		if eval(topic,query) > (min(len(topic),len(query))-1): #編集距離が遠い
-			print(topic,"|",query)
-		"""
 		for line in lines[1:]:
 			line = line.split(' ')
 			_id = line[0]
 			sentence = ''.join(line[1:])
+			first_word = wakati.parse(sentence).split(" ")[0:2]
+            form = chasen.parse(first_word)
+            if "接続" in form:
+                continue
 			# フィルタリング項目（10文字以下、70文字以上、句点で終わる）
 			if (sentence == "\n"):
 				continue
@@ -53,8 +53,8 @@ for _file in files:
 			#	continue
 			elif sentence[-2] != "。":
 				continue
-			elif sentence.find("現在") != -1:
-				continue
+			# elif sentence.find("現在") != -1:
+			# 	continue
 			elif sentence.find("上述") != -1:
 				continue
 			elif sentence.find("後述") != -1:
@@ -65,42 +65,43 @@ for _file in files:
 				continue
 			elif sentence.find("下記") != -1:
 				continue
-			elif sentence.find("当時") != -1:
-				continue
-			# elif sentence.find("以下") != -1:
-			# 	continue
-			elif sentence.find("次の") != -1:
-				continue
 			elif sentence.find("参照") != -1:
-				continue
-			elif sentence.find("その後") != -1:
-				continue
-			elif sentence.find("このほか") != -1:
-				continue
-			elif sentence.find("この他") != -1:
-				continue
-			elif sentence.find("こういった") != -1:
-				continue
-			elif sentence.find("このため") != -1:
-				continue
-			elif sentence.find("かつて") != -1:
-				continue
-			elif sentence.find("現代") != -1:
-				continue
-			elif sentence.find("このような") != -1:
-				continue
-			elif sentence.find("再度") != -1:
-				continue
-			# elif sentence.find("同様") != -1:
-			# 	continue
-			elif sentence.find("年には") != -1:
 				continue
 			elif sentence.find("本項") != -1:
 				continue
-			elif sentence.find("諸説") != -1:
-				continue
-			elif sentence.find("さらに") != -1:
-				continue
+			# elif sentence.find("当時") != -1:
+			# 	continue
+			# elif sentence.find("以下") != -1:
+			# 	continue
+			# elif sentence.find("次の") != -1:
+			# 	continue
+			#
+			# elif sentence.find("その後") != -1:
+			# 	continue
+			# elif sentence.find("このほか") != -1:
+			# 	continue
+			# elif sentence.find("この他") != -1:
+			# 	continue
+			# elif sentence.find("こういった") != -1:
+			# 	continue
+			# elif sentence.find("このため") != -1:
+			# 	continue
+			# elif sentence.find("かつて") != -1:
+			# 	continue
+			# elif sentence.find("現代") != -1:
+			# 	continue
+			# elif sentence.find("このような") != -1:
+			# 	continue
+			# elif sentence.find("再度") != -1:
+			# 	continue
+			# # elif sentence.find("同様") != -1:
+			# # 	continue
+			# elif sentence.find("年には") != -1:
+			# 	continue
+			# elif sentence.find("諸説") != -1:
+			# 	continue
+			# elif sentence.find("さらに") != -1:
+			# 	continue
 			else:
 				# sentence = re.sub(r'（.*?）|\(.*?\)|\[.*?\]|。|:|','',sentence.rstrip())
 				fout.write(_id + " " + sentence)
@@ -130,8 +131,8 @@ def filtering(lines):
 			continue
 		# elif (len(sentence) > 70) or (len(sentence) < 10) or sentence[-2] != "。":
 		# 	continue
-		elif sentence.find("現在") != -1:
-			continue
+		# elif sentence.find("現在") != -1:
+		# 	continue
 		elif sentence.find("上述") != -1:
 			continue
 		elif sentence.find("後述") != -1:

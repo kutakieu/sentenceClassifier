@@ -14,7 +14,7 @@ from random import shuffle
 import random
 
 wakati = MeCab.Tagger("-Owakati")
-chasen = MeCab.Tagger('-Ochasen')
+
 fin = open("/Users/tAku/Nextremer/data/wikidata_pNdd_sameTopicANDsameSection2/2000_annotated_wakati.csv", encoding="utf-8")
 lines = fin.readlines()
 num_lines = len(lines)

@@ -14,12 +14,12 @@ from os.path import isfile, join
 
 fileNum = 50
 
-dirin = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection/wikidata_hierarchical_filtered/"
+dirin = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/wikidata_hierarchical_filtered/"
 files = [f for f in listdir(dirin) if isfile(join(dirin, f))]
 
-dirout = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection/wikidata_hierarchical_modified/"
+dirout = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/wikidata_hierarchical_modified/"
 
-dirout_other = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection/wikidata_hierarchical_other/"
+dirout_other = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/wikidata_hierarchical_other/"
 # outname = dirname + filename.split('.')[0] + "_speak.txt"
 # othername = dirname + filename.split('.')[0] + "_oth.txt"
 # fin = open(dirname + filename, encoding='utf-8')
@@ -54,8 +54,6 @@ for _file in files:
         # topic = _file.split('.')[0]
 
         print(original_topic)
-        # if _file == "おでん.txt":
-        #     print("おでん！！！！！！")
 
         #料理名（ファイル名）の同義語をfoodList_synonyms.txtから探し、対応するリストを返す
         synonym = []
@@ -65,7 +63,7 @@ for _file in files:
                 break
         print(synonym)
         count = 0
-        for line in lines:
+        for line in lines[1:]:
             flag = False
             headflag = False
             shift = 0
@@ -75,6 +73,9 @@ for _file in files:
             line = line.split(' ')
             _id = line[0]
             sentence = ''.join(line[1:])
+            sentence = sentence.split("::")
+            headline = sentence[0]
+            sentence = sentence[1]
             # print(str(type(topic)) + " " + topic)
             # print(str(type(sentence)) + " " + sentence)
             # t = unicode(topic)
@@ -367,7 +368,7 @@ for _file in files:
                 fouto.write(_id + " " + r.text() + "\n")
             else:
                 # print(r.text())
-                fout.write(_id + " " + original_topic + "::" + r.text() + "\n")
+                fout.write(_id + " " + original_topic + "::" + headline + "::" + r.text() + "\n")
                 # ftopic.write(tmp[0] + "\n")
         print(_file + " Exclusion-sentence :",count)
         # if(fileNum == 0):

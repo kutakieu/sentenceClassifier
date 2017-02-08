@@ -7,8 +7,8 @@ import MeCab
 from os import listdir
 from os.path import isfile, join
 import re
-dirin = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection/wikidata_raw/"
-dirout = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection/wikidata_hierarchical/"
+dirin = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/wikidata_raw/"
+dirout = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/wikidata_hierarchical/"
 # filein = "茶.txt"
 # fileout = "茶.txt"
 # fin = open(dirin + filein, encoding="utf-8")
@@ -27,6 +27,7 @@ p_index = 0
 s_index = 0
 H_sort = 0
 text = ""
+headline = ""
 food_id = 1
 listAll = []
 listTmp = []
@@ -45,17 +46,16 @@ for _file in files:
         # page_topic = lines[0].split("::")[0]
         # original_topic = lines[0].split("::")[1]
         H_index = -1
-        # topic =　
+        headline = ""
         for line in lines[1:]:
             line = line[:-1]
             line.replace('\n','')
             if "!headline!" in line:
                 # line = line[:-1]
                 words = line.split("##")
-                if words[1] in template:
+                headline = words[1]
+                if headline in template:
                     break
-                # current_H = head[words[2]]
-                # name_H = words[1]
                 try:
                     H_sort = head[words[-1]]
                 except Exception as e:
@@ -63,8 +63,8 @@ for _file in files:
                     continue
                 H_index += 1
                 p_index = 0
-            else:
 
+            else:
                 sentences = line.split('。')
                 s_index = 0
                 for sentence in sentences:
@@ -80,7 +80,7 @@ for _file in files:
                         # print(H_index)
                         # print(p_index)
                         # print(s_index)
-                        id2sentence[int(_id)] = sentence + "。"
+                        id2sentence[int(_id)] = headline + "::" + sentence + "。"
                         s_index += 1
                 p_index += 1
             # print(line)
@@ -93,7 +93,7 @@ for _file in files:
         food2id[_file.split('.')[0]] = food_id
         food_id += 1
 
-file_food2id = open("/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection/food2id.txt", "w", encoding="utf-8")
+file_food2id = open("/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/food2id.txt", "w", encoding="utf-8")
 for key, value in food2id.items():
     file_food2id.write(key + " " + str(value) + "\n")
 

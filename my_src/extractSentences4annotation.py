@@ -14,11 +14,11 @@ from numpy.random import normal
 wakati = MeCab.Tagger("-Owakati")
 random.seed(1)
 
-dirin = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection/wikidata_hierarchical_modified/"
-dirout = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection/wikidata_extracted4annotation/"
+dirin = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/"
+dirout = "/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/"
 
 files = [f for f in listdir(dirin) if isfile(join(dirin, f))]
-fout1 = open(dirout + "10000ish.csv", "w", encoding="utf-8")
+fout1 = open(dirout + "10000.csv", "w", encoding="utf-8")
 fout1.write("id,topic,sentence\n")
 fout2 = open(dirout + "2000ish.csv", "w", encoding="utf-8")
 fout2.write("id,topic,sentence\n")
@@ -58,7 +58,14 @@ for _file in files:
         #for 10000ish --- extract 5 sentences per file/topic
         if len(candidates) <= 5:
             for candidate in candidates:
-                fout1.write(candidate)
+                sentence = candidate
+                sentence = sentence.split(" ")
+                _id = sentence[0]
+                sentence = "".join(sentence[1:])
+                sentence = sentence.split("::")
+                topic = sentence[0]
+                sentence = sentence[1]
+                fout1.write(_id + "," + topic + "," + sentence + "\n")
         else:
             index = []
             while len(index)<5:

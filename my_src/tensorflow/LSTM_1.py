@@ -1,10 +1,3 @@
-'''
-A Bidirectional Recurrent Neural Network (LSTM) implementation example using TensorFlow library.
-This example is using the MNIST database of handwritten digits (http://yann.lecun.com/exdb/mnist/)
-Long Short Term Memory paper: http://deeplearning.cs.cmu.edu/pdfs/Hochreiter97_lstm.pdf
-Author: Aymeric Damien
-Project: https://github.com/aymericdamien/TensorFlow-Examples/
-'''
 
 from __future__ import print_function
 
@@ -16,15 +9,7 @@ from random import shuffle
 import random
 from gensim.models import Word2Vec
 import re
-# Import MNIST data
-# from tensorflow.examples.tutorials.mnist import input_data
-# mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
 
-'''
-To classify images using a bidirectional recurrent neural network, we consider
-every image row as a sequence of pixels. Because MNIST image shape is 28*28px,
-we will then handle 28 sequences of 28 steps for every sample.
-'''
 
 # Parameters
 learning_rate = 0.001
@@ -33,7 +18,7 @@ batch_size = 50
 display_step = 10
 num_data = 0
 # Network Parameters
-n_input = 206 # MNIST data input (img shape: 28*28)
+n_input = 206 # number of features of each step(word)
 n_steps = 60 # timesteps
 n_hidden = 200 # hidden layer num of features
 n_classes = 2 # MNIST total classes (0-9 digits)
