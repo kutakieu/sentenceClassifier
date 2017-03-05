@@ -21,20 +21,18 @@ def cross_validation(dirin, files, k):
         if re.search(".tsv",_file) == None:
             files.remove(_file)
 
-    print(len(files))
+    # print(len(files))
 
     shuffle(files)
     num_files_each_group = int(len(files)/k)
-    print(num_files_each_group)
+    # print(num_files_each_group)
     plots = []
 
     for i in range(k):
-        print(str(i+1) + " group")
+
         training_files = files[0:num_files_each_group*i] + files[num_files_each_group*(i+1):]
         test_files = files[num_files_each_group*i:num_files_each_group*(i+1)]
 
-        print(len(training_files))
-        print(len(test_files))
         data4training, labels4training = make_data_set(training_files, dirin)
 
         data4test, labels4test = make_data_set(test_files, dirin)
@@ -53,8 +51,8 @@ def cross_validation(dirin, files, k):
                 TP_total += 1
             elif probability[j][1] > 0 and labels4test[j] == -1:
                 FP_total += 1
-        print(TP_total)
-        print(FP_total)
+        # print(TP_total)
+        # print(FP_total)
         plot = []
         for i in range(100):
             TP = 0
@@ -75,7 +73,7 @@ def cross_validation(dirin, files, k):
 
 
 
-def make_data_set(files, dirin, with_h_id=False):
+def make_data_set(files, dirin, with_h_id=True):
     data = []
     labels = []
     num_data = 0
@@ -110,6 +108,7 @@ def make_data_set(files, dirin, with_h_id=False):
         food_id = int(_id[0:len(_id)-7])
         h_sort = int(_id[-7])
         # h_id = int(_id[len(_id)-6:len(_id)-4]) / max_h_id
+        h_id = int(_id[len(_id)-6:len(_id)-4])
         p_id = int(_id[len(_id)-4:len(_id)-2])
         s_id = int(_id[len(_id)-2:len(_id)])
 
@@ -140,41 +139,53 @@ def main():
     dirin = "/Users/tAku/Nextremer/data/data4paper/"
     files = [f for f in listdir(dirin) if isfile(join(dirin, f))]
 
-    plots = cross_validation(dirin, files, 5)
-
-
-    base_fpr = np.linspace(0, 1, 100)
+    MEAN = np.zeros((100))
+    STDS_UPPER = np.zeros((100))
+    STDS_LOWER = np.zeros((100))
+    repeat = 50
     plt.figure(figsize=(5, 5))
-    for plot in plots:
-        plot = np.asarray(plot)
-        plt.plot(plot[:,1], plot[:,0], 'b', alpha=0.15)
+    for k in range(repeat):
+        print(str(k+1) + "th time")
+        plots = cross_validation(dirin, files, 5)
 
+        base_fpr = np.linspace(0, 1, 100)
 
-    stds_upper = []
-    stds_lower = []
-    means = []
-    yinterps = []
-    for plot in plots:
-        plot = np.asarray(plot)
-        yinterps.append(interp(base_fpr, plot[:,1], plot[:,0]))
+        for plot in plots:
+            plot = np.asarray(plot)
+            plt.plot(plot[:,1], plot[:,0], 'b', alpha=0.05)
 
-    for i in range(100):
-        std = 0
-        mean = 0
-        for yinterp in yinterps:
-            # print(plot[i][1])
-            mean += yinterp[i]
-        # exit()
-        mean /= len(plots)
-        for yinterp in yinterps:
-            std += (yinterp[i] - mean)**2
-        std = sqrt(std/6)
-        # stds.append(std)
-        means.append(mean)
-        stds_upper.append(mean+std)
-        stds_lower.append(mean-std)
-    plt.fill_between(base_fpr, stds_lower, stds_upper, color='grey', alpha=0.3)
-    plt.plot(base_fpr, means, "b")
+        stds_upper = []
+        stds_lower = []
+        means = []
+        yinterps = []
+        for plot in plots:
+            plot = np.asarray(plot)
+            yinterps.append(interp(base_fpr, plot[:,1], plot[:,0]))
+
+        for i in range(100):
+            std = 0
+            mean = 0
+            for yinterp in yinterps:
+                # print(plot[i][1])
+                mean += yinterp[i]
+            # exit()
+            mean /= len(plots)
+            for yinterp in yinterps:
+                std += (yinterp[i] - mean)**2
+            std = sqrt(std/6)
+            # stds.append(std)
+            means.append(mean)
+            stds_upper.append(mean+std)
+            stds_lower.append(mean-std)
+        MEAN = MEAN + np.asarray(means)
+        STDS_UPPER = STDS_UPPER + np.asarray(stds_upper)
+        STDS_LOWER = STDS_LOWER + np.asarray(stds_lower)
+
+    MEAN /= repeat
+    STDS_UPPER /= repeat
+    STDS_LOWER /= repeat
+    plt.fill_between(base_fpr, STDS_LOWER, STDS_UPPER, color='grey', alpha=0.3)
+    plt.plot(base_fpr, MEAN, "b")
     # plt.plot([1,0],"go")
     plt.plot([0, 1], [0, 1],'r--')
     plt.xlim([-0.01, 1.01])
