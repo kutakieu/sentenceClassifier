@@ -1,0 +1,11 @@
+このフォルダーのファイルは使う必要はもうないです。
+
+
+・makeTrainingSet4word2vec.py
+スクレイピングした文章に対して分かち書きしてword2vecに渡すためのコーパスを作るためだけのファイル。
+
+・calculateSimilarityByWord2Vec.py
+作成したワードベクトルでトピックと各文章に含まれる単語の類似度を算出して、平均値などをとるファイル。
+
+・scrapingWiki4word2vec.py
+スクレイピングしてくる段階でword2vecに渡せるファイルを直接作るためのファイル。

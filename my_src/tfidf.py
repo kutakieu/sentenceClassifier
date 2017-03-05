@@ -42,7 +42,7 @@ for _file in files:
 						bagOfWords_eachDoc.append(morpheme)
 
 
-            # file_food2id.write(key + " " + str(value) + "\n")
+        	# file_food2id.write(key + " " + str(value) + "\n")
 		# if i == 10:
 		# 	for key, value in word2tf_df.items():
 		# 		print(key + " tf:" + str(value[0]) + " idf:" + str(value[1]))

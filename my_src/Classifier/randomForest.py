@@ -14,31 +14,36 @@ import MeCab
 
 wakati = MeCab.Tagger("-Owakati")
 
-fin = open("/Users/tAku/Nextremer/data/wikidata_pNdd_sameTopicANDsameSection2/2000ish.csv", encoding="utf-8")
+fin = open("/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/0208_annotation_shuffled.tsv", encoding="utf-8")
 data_path = "/Users/tAku/Nextremer/data/"
-model = Word2Vec.load_word2vec_format(data_path + 'foodVector.bin', binary=True)
 
-file_id2food = open("/Users/tAku/Nextremer/data/wikidata_pNdd_sameTopicANDsameSection2/id2food.txt", encoding="utf-8")
-id2food = {}
+#日本語のページ全体のワードベクトル
+w2v_model = Word2Vec.load_word2vec_format(data_path + 'jawiki_all.bin', binary=True, unicode_errors='ignore')
+
+#フードドメインのみで作ったワードベクトル
+# w2v_model = Word2Vec.load_word2vec_format(data_path + 'foodVector.bin', binary=True)
+
+# file_id2food = open("/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/id2food.txt", encoding="utf-8")
+# id2food = {}
 file_tfidf = open("/Users/tAku/Nextremer/data/wikidata_p_only_sameTopicANDsameSection2/tfidf.txt", encoding="utf-8")
 tfidf = {}
 remove_squareBracket = re.compile(r'\[.*?\]|（.*?）| \(.*?\)')
 original_sentences = []
 
-n_input = 209 # number of features of each step(word)
+n_input = 1 # number of features of each step(word)
 n_steps = 60 # timesteps
 
 def prepare():
-    """construct the id2food dictionary"""
-    lines = file_id2food.readlines()
-    for line in lines:
-        line = line[:-1]
-        line = line.split(" ")
-        _id = line[0]
-        food = "".join(line[1:])
-        id2food[int(_id)] = food
-    file_id2food.close()
-    print("complete making id2food dictionary")
+    # """construct the id2food dictionary"""
+    # lines = file_id2food.readlines()
+    # for line in lines:
+    #     line = line[:-1]
+    #     line = line.split(" ")
+    #     _id = line[0]
+    #     food = "".join(line[1:])
+    #     id2food[int(_id)] = food
+    # file_id2food.close()
+    # print("complete making id2food dictionary")
 
     """construct the tfidf dictionary here"""
     lines = file_tfidf.readlines()
@@ -54,13 +59,15 @@ def prepare():
     print("complete making tfidf dictionary")
 
     lines = fin.readlines()
-    lines = lines[1:]
+    # lines = lines[1:]
     num_data = 0
-    for line in lines[1:]:
-        if line.split(",")[0] != "":
+    training_lines = []
+    for line in lines:
+        if line.split("\t")[3] == "t" or line.split("\t")[3] == "f":
             num_data += 1
+            training_lines.append(line)
     print("total : " + str(num_data) + " sentences")
-    shuffle(lines)
+    shuffle(training_lines)
     max_length = n_steps
     unknown = np.zeros(n_input)
 
@@ -69,8 +76,8 @@ def prepare():
     # random.seed(0)
     j = 0   #indenx of sentences (= 0~num_of_labeled_sentences)
     # print(id2food[10])
-    for line in lines[1:]:
-        line = line.split(",")
+    for line in training_lines:
+        line = line.split("\t")
         _id = line[0]
         if _id == "":
             continue
@@ -79,18 +86,18 @@ def prepare():
         h_id = int(_id[len(_id)-6:len(_id)-4])
         p_id = int(_id[len(_id)-4:len(_id)-2])
         s_id = int(_id[len(_id)-2:len(_id)])
-        try:
-            id2food[food_id]
-        except:
-            print(_id)
-            continue
+        # try:
+        #     id2food[food_id]
+        # except:
+        #     print(_id)
+        #     continue
 
-        topic = remove_squareBracket.sub("",id2food[food_id])
-        label = line[1]
+        topic = remove_squareBracket.sub("",line[2])
+        label = line[3]
         label = 1 if label == "t" else 0
         labels.append(label)
 
-        text = "".join(line[3:])
+        text = "".join(line[4:])
         original_sentences.append(text)
 
         morphemes = wakati.parse(text).split(" ")
@@ -109,29 +116,29 @@ def prepare():
         i = 0   #index of term/word of each sentence. range is (0~59)
         for morpheme in morphemes:
             try:
-                score = model[morpheme]
-                wordVecs[i] = score
+                # score = w2v_model[morpheme]
+                # wordVecs[i] = score
 
                 """ここから各単語とトピックの類似度をパラメーターの201番目として渡す"""
-                wordVecs[i][200] = model.similarity(topic,morpheme)
+                wordVecs[i][0] = w2v_model.similarity(topic,morpheme)
             except:
                 wordVecs[i] = unknown
                 # wordVecs[i][200] = 0
-            wordVecs[i][201] = h_sort
-            wordVecs[i][202] = h_id
-            wordVecs[i][203] = p_id
-            wordVecs[i][204] = s_id
-            wordVecs[i][205] = sentence_length
-
-            try:
-                current_tfidf = tfidf[morpheme]
-                wordVecs[i][206] = current_tfidf[0]
-                wordVecs[i][207] = current_tfidf[1]
-                wordVecs[i][208] = current_tfidf[2]
-            except:
-                wordVecs[i][206] = 0
-                wordVecs[i][207] = 0
-                wordVecs[i][208] = 0
+            # wordVecs[i][1] = h_sort
+            # wordVecs[i][2] = h_id
+            # wordVecs[i][3] = p_id
+            # wordVecs[i][4] = s_id
+            # wordVecs[i][5] = sentence_length
+            #
+            # try:
+            #     temp_tfidf = tfidf[morpheme]
+            #     wordVecs[i][6] = temp_tfidf[0]
+            #     wordVecs[i][7] = temp_tfidf[1]
+            #     wordVecs[i][8] = temp_tfidf[2]
+            # except:
+            #     wordVecs[i][6] = 0
+            #     wordVecs[i][7] = 0
+            #     wordVecs[i][8] = 0
 
             i += 1
         data[j] = np.reshape(wordVecs,(n_steps * n_input))
@@ -167,7 +174,7 @@ def main():
         print("load the pickle file...")
     except:
         print("start training the model...")
-        flag4pca = True
+        flag4pca = False
 
         clf = RandomForestClassifier(n_estimators=1000, max_depth=None, min_samples_split=2, random_state=0, max_features = "auto")
         # clf = ExtraTreesClassifier(n_estimators=1000, max_depth=None, min_samples_split=2, random_state=0, max_features = "auto")
