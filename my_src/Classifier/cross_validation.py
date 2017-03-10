@@ -27,7 +27,7 @@ def cross_validation(dirin, files, k):
     num_files_each_group = int(len(files)/k)
     # print(num_files_each_group)
     plots = []
-
+    correct = 0
     for i in range(k):
 
         training_files = files[0:num_files_each_group*i] + files[num_files_each_group*(i+1):]
@@ -46,7 +46,11 @@ def cross_validation(dirin, files, k):
 
         TP_total = 0
         FP_total = 0
+
         for j in range(len(data4test)):
+            
+            if (probability[j][1] > 0.5 and labels4test[j] == 1) or (probability[j][1] < 0.5 and labels4test[j] == -1):
+                correct += 1
             if probability[j][1] > 0 and labels4test[j] == 1:
                 TP_total += 1
             elif probability[j][1] > 0 and labels4test[j] == -1:
@@ -69,7 +73,7 @@ def cross_validation(dirin, files, k):
         # exit()
         plots.append(plot)
 
-    return plots
+    return plots, (correct/k)/len(data4test)
 
 
 
@@ -118,10 +122,9 @@ def make_data_set(files, dirin, with_h_id=True):
 
         wordVec = []
         wordVec.append(h_sort)
-        if with_h_id:
-            wordVec.append(h_id)
+        # wordVec.append(h_id)
         wordVec.append(p_id)
-        wordVec.append(s_id)
+        # wordVec.append(s_id)
 
         # num_f = 500
         if label == 1:
@@ -136,23 +139,25 @@ def make_data_set(files, dirin, with_h_id=True):
     return data, labels
 
 def main():
-    dirin = "/Users/tAku/Nextremer/data/data4paper/"
+    dirin = "/Users/tAku/Nextremer/data/data4paper_final/annotation/"
     files = [f for f in listdir(dirin) if isfile(join(dirin, f))]
 
     MEAN = np.zeros((100))
     STDS_UPPER = np.zeros((100))
     STDS_LOWER = np.zeros((100))
-    repeat = 50
+    repeat = 500
     plt.figure(figsize=(5, 5))
+    accuracy_sum = 0
     for k in range(repeat):
         print(str(k+1) + "th time")
-        plots = cross_validation(dirin, files, 5)
+        plots, accuracy = cross_validation(dirin, files, 5)
+        accuracy_sum += accuracy
 
         base_fpr = np.linspace(0, 1, 100)
 
         for plot in plots:
             plot = np.asarray(plot)
-            plt.plot(plot[:,1], plot[:,0], 'b', alpha=0.05)
+            # plt.plot(plot[:,1], plot[:,0], 'b', alpha=0.05)
 
         stds_upper = []
         stds_lower = []
@@ -184,8 +189,10 @@ def main():
     MEAN /= repeat
     STDS_UPPER /= repeat
     STDS_LOWER /= repeat
-    plt.fill_between(base_fpr, STDS_LOWER, STDS_UPPER, color='grey', alpha=0.3)
+    # plt.fill_between(base_fpr, STDS_LOWER, STDS_UPPER, color='grey', alpha=0.3)
     plt.plot(base_fpr, MEAN, "b")
+    # print(MEAN[50])
+    print(accuracy_sum/repeat)
     # plt.plot([1,0],"go")
     plt.plot([0, 1], [0, 1],'r--')
     plt.xlim([-0.01, 1.01])
@@ -193,7 +200,8 @@ def main():
     plt.ylabel('True Positive Rate')
     plt.xlabel('False Positive Rate')
     plt.axes().set_aspect('equal', 'datalim')
-    plt.show()
+    # plt.show()
+
 
 
 if __name__ == "__main__":
